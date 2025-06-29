@@ -81,7 +81,7 @@ app.post("/api/submit", upload.single("resume"), async (req, res) => {
 });
 
 app.get("/", (req, res) => {
-  res.send("Apply4me backedn server is runing !");
+  res.send("Apply4me backend server is runing !");
 });
 
 // Start server
