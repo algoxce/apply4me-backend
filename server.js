@@ -1,4 +1,3 @@
-// server.js
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -15,25 +14,30 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// File storage setup
+// Serve uploaded files statically if you want to access them via URL (optional)
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
+// File storage setup with multer
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Ensure this folder exists
+    cb(null, "uploads/"); // Make sure this folder exists
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + "_" + file.originalname);
   },
 });
-
 const upload = multer({ storage });
 
 // MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
-  .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error("MongoDB connection error:", err));
+  .then(() => console.log("✅ MongoDB connected successfully"))
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err);
+    process.exit(1); // Optional: stop the server if DB connection fails
+  });
 
-// Schema and Model
+// Define schema and model
 const submissionSchema = new mongoose.Schema({
   name: String,
   email: String,
@@ -42,10 +46,9 @@ const submissionSchema = new mongoose.Schema({
   resumePath: String,
   createdAt: { type: Date, default: Date.now },
 });
-
 const Submission = mongoose.model("Submission", submissionSchema);
 
-// Route to receive form submissions
+// API route to receive form submissions
 app.post("/api/submit", upload.single("resume"), async (req, res) => {
   try {
     const { name, email, mobile, message } = req.body;
@@ -68,5 +71,5 @@ app.post("/api/submit", upload.single("resume"), async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
+  console.log(`🚀 Server running on port ${PORT}`);
 });
